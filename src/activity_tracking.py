@@ -65,7 +65,7 @@ class ActivityRecorder(object):
         """ Callback for hooks to send their data to """
         if self.track_inputs:
             self.buffers[name + '_output'].batch_append(outputs.detach().clone())
-            self.buffers[name + '_inputs'].batch_append(inputs.detach().clone())
+            self.buffers[name + '_input'].batch_append(inputs.detach().clone())
 
         else:
             self.buffers[name].batch_append(outputs.detach())
