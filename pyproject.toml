@@ -1,0 +1,15 @@
+[project]
+name = "activity_tracking"
+description = "pytorch model activity tracking utility"
+version = "0.1"
+authors = [
+]
+dependencies = [
+    "numpy",
+    "torch",
+    "safetensors"
+]
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
