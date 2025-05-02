@@ -20,12 +20,12 @@ class ActivityDataset(Dataset):
         self.number_per_file = metadata[1]
         self.layer_names = metadata[2]
 
-        files_max = metadata[0] // self.number_per_file + 1
+        max_file_ind = (self.len - 1) // self.number_per_file
 
         self.files = [[safe_open(f'{directory}/{layer}-{number}.st',
                                  framework="pt", device=device)
                        for layer in self.layer_names]
-                      for number in range(files_max)]
+                      for number in range(max_file_ind + 1)]
 
     def __len__(self):
         return self.len

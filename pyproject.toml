@@ -1,7 +1,7 @@
 [project]
 name = "activity_tracking"
 description = "pytorch model activity tracking utility"
-version = "0.1"
+version = "0.1.1"
 authors = [
      { name = "lrast", email = "lrast@github.io" }
 ]
