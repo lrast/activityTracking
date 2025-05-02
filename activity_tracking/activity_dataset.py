@@ -1,4 +1,4 @@
-# methods for writing to files
+# tools for saving and read activity data from disk
 
 import torch
 import safetensors.torch
@@ -6,11 +6,13 @@ import safetensors.torch
 from torch.utils.data import Dataset
 from safetensors import safe_open
 
-from monitoring import activate_model_tracking, clear_hooks
+from activity_tracking.monitoring import activate_model_tracking, clear_hooks
 
 
 class ActivityDataset(Dataset):
-    """ Dataset of tensor activity """
+    """ Dataset of tensor activity
+        Returned in the order of self.layer_names
+    """
     def __init__(self, directory, device='cpu'):
         super(ActivityDataset, self).__init__()
         directory = directory.rstrip('/')
@@ -22,9 +24,11 @@ class ActivityDataset(Dataset):
 
         max_file_ind = (self.len - 1) // self.number_per_file
 
-        self.files = [[safe_open(f'{directory}/{layer}-{number}.st',
+        self.files = [{layer_name:
+                       safe_open(f'{directory}/{layer_name}-{number}.st',
                                  framework="pt", device=device)
-                       for layer in self.layer_names]
+                       for layer_name in self.layer_names}
+
                       for number in range(max_file_ind + 1)]
 
     def __len__(self):
@@ -34,7 +38,8 @@ class ActivityDataset(Dataset):
         fnum = index // self.number_per_file
         ind = index % self.number_per_file
 
-        return tuple(file.get_tensor(str(ind)) for file in self.files[fnum])
+        return tuple(self.files[fnum][layer_name].get_tensor(str(ind))
+                     for layer_name in self.layer_names)
 
 
 class ActivityRecorder(object):
@@ -111,6 +116,10 @@ class BufferToFile(list):
 
     def save_contents_to_file(self):
         """ write buffer contents to a file """
+        if len(self) == 0:
+            # prevent overwriting data that has already been written
+            return
+
         file_num = (self.total_entries - 1) // self.max_len
 
         dict_version = {str(i): v for (i, v) in enumerate(self)}
