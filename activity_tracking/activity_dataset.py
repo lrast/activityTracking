@@ -1,12 +1,13 @@
 # tools for saving and read activity data from disk
 
 import torch
+import os
 import safetensors.torch
 
 from torch.utils.data import Dataset
 from safetensors import safe_open
 
-from activity_tracking.monitoring import activate_model_tracking, clear_hooks
+from activity_tracking.hooks import activate_model_hooks, clear_hooks
 
 
 class ActivityDataset(Dataset):
@@ -62,9 +63,9 @@ class ActivityRecorder(object):
                         for name in self.layer_names}
 
         self.model = model
-        self.active_hooks = activate_model_tracking(model, layers_to_track,
-                                                    self.ingest,
-                                                    track_inputs=track_inputs)
+        self.active_hooks = activate_model_hooks(model, layers_to_track,
+                                                 self.ingest,
+                                                 track_inputs=track_inputs)
 
     def ingest(self, name, outputs, inputs=None):
         """ Callback for hooks to send their data to """
@@ -100,6 +101,8 @@ class BufferToFile(list):
         self.directory = directory
         self.total_entries = 0
         self.max_len = max_len
+
+        os.makedirs(directory, exist_ok=True)
 
     def append(self, item):
         """ Adds new item to buffer """

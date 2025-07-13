@@ -1,6 +1,6 @@
 # Adds context sensitive perturbations to a model
 
-def activate_model_tracking(model, layers_to_track, callback, track_inputs=False):
+def activate_model_hooks(model, layers_to_track, callback, track_inputs=False):
     """ Adds tracking hooks to the model """
     modules = dict(model.named_modules())
 
@@ -9,9 +9,9 @@ def activate_model_tracking(model, layers_to_track, callback, track_inputs=False
     def make_hook(name):
         def hook(module, input, output):
             if track_inputs:
-                callback(name, output, input[0])
+                return callback(name, output, input[0])
             else:
-                callback(name, output)
+                return callback(name, output)
 
         return hook
 
